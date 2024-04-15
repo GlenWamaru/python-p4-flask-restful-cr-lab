@@ -17,10 +17,32 @@ db.init_app(app)
 api = Api(app)
 
 class Plants(Resource):
-    pass
+    def get(self):
+        plants = Plant.query.all()
+        plants_json = [plant.serialize() for plant in plants]
+        return jsonify(plants_json)
+
+    def post(self):
+        # POST request to add a new plant
+        data = request.get_json()
+        # Create a new plant 
+        new_plant = Plant(name=data['name'], image=data['image'], price=data['price'])
+        db.session.add(new_plant)
+        db.session.commit()
+      
+        return jsonify(new_plant.serialize()), 201
+
+
 
 class PlantByID(Resource):
-    pass
+    def get(self, plant_id):
+        # GET request to retrieve a specific plant by ID
+        plant = Plant.query.get_or_404(plant_id)
+        return jsonify(plant.serialize())
+
+
+api.add_resource(Plants, '/plants')
+api.add_resource(PlantByID, '/plants/<int:plant_id>')
         
 
 if __name__ == '__main__':
